@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetWithElasticSearch.Context;
+using Newtonsoft.Json.Linq;
 
 namespace NetWithElasticSearch.Controllers
 {
@@ -78,6 +79,34 @@ namespace NetWithElasticSearch.Controllers
 
             await Task.WhenAll(tasks);
             return Ok();
+        }
+
+        [HttpGet("[action]/{value}")]
+        public async Task<IActionResult> GetDataListWithElasticSearch(string value)
+        {
+            var settings = new ConnectionConfiguration(new Uri("http://localhost:9260"));
+            var client = new ElasticLowLevelClient(settings);
+            var response = await client.SearchAsync<StringResponse>("travels", PostData.Serializable(new
+            {
+                query = new
+                {
+                    wildcard = new
+                    {
+                        Description = new { value = $"*{value}" }
+                    }
+                }
+            }));
+            var results = JObject.Parse(response.Body);
+            var hits = results["hits"]["hits"].ToObject<List<JObject>>();
+
+            List<Travel> travels = new();
+
+            foreach(var hit in hits)
+            {
+                travels.Add(hit["_source"].ToObject<Travel>());
+            }
+
+            return Ok(travels.Take(10));
         }
     }
 }
