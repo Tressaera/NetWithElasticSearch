@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Elasticsearch.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetWithElasticSearch.Context;
@@ -52,6 +53,31 @@ namespace NetWithElasticSearch.Controllers
              .AsNoTracking()
              .ToListAsync();
              return Ok(travels.Take(10));
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> SyncToElastic()
+        {
+            var settings = new ConnectionConfiguration(new Uri("http://localhost:9200"));
+            var client = new ElasticLowLevelClient(settings);
+            List<Travel> travels = await context.Travels.ToListAsync();
+
+            var tasks = new List<Task>(); 
+            foreach(var travel in travels)
+            {
+                await client.IndexAsync<StringResponse>("travels", travel.Id.ToString(),
+                PostData.Serializable(
+                 new
+                 {
+                 travel.Id,
+                 travel.Title,
+                 travel.Description
+                 }
+                ));
+            }
+
+            await Task.WhenAll(tasks);
+            return Ok();
         }
     }
 }
