@@ -8,4 +8,4 @@
 
 <p>Kibana, Elasticsearch ile birlikte kullanılan bir veri görselleştirme ve keşif aracıdır. Elasticsearch'te depolanan verileri grafikler, haritalar, tablolar ve diğer görselleştirme bileşenleri aracılığıyla sunar. </p>
 
-<h1>En sonucunda ise Elasticsearch ile verileri depolayıp arama yaparak, Kibana ile bu verileri görselleştirdim.</h1>
+<h3>En sonucunda ise Elasticsearch ile verileri depolayıp arama yaparak, Kibana ile bu verileri görselleştirdim.</h3>
